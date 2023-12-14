@@ -1,7 +1,14 @@
 package game
 
 import rl "vendor:raylib"
+import "core:fmt"
+import "lib"
 
+import "player"
+
+// https://gist.github.com/jakubtomsu/9cae5298f86d2b9d2aed48641a1a3dbd
+
+// Constants
 WINDOW_TITLE :: "FPS"
 FRAME_RATE :: 60
 
@@ -10,16 +17,13 @@ SCREEN_HEIGHT :: 450
 
 MAX_COLUMNS :: 20
 
-Column :: struct {
-	position: rl.Vector3,
-	height: f32,
-	color: rl.Color,
-}
+// Variable Definitions
+@(private) camera: rl.Camera
+@(private) camera_mode: rl.CameraMode
 
-camera: rl.Camera
-camera_mode: rl.CameraMode
-columns: [MAX_COLUMNS] Column
+@(private) columns: [MAX_COLUMNS] lib.Object
 
+// Default Functions
 init :: proc() {
   rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE)
 
@@ -27,23 +31,30 @@ init :: proc() {
 	rl.HideCursor()
 
 	camera = init_camera()
-	camera_mode = rl.CameraMode.FIRST_PERSON
+	camera_mode = rl.CameraMode.THIRD_PERSON
 
-	for i in 0..<MAX_COLUMNS {
-		columns[i].height = cast(f32) rl.GetRandomValue(1, 12)
-
-		columns[i].position = rl.Vector3 {
-			cast(f32) rl.GetRandomValue(-15, 15),
-			columns[i].height / 2.0,
-			cast(f32) rl.GetRandomValue(-15, 15)
-		}
-
-		columns[i].color = rl.Color { cast(u8) rl.GetRandomValue(20, 255), cast(u8) rl.GetRandomValue(10, 55), 30, 255 }
-	}
+	init_env()
 } 
 
 update :: proc() {
   rl.UpdateCamera(&camera, camera_mode)
+
+	for i in 0 ..< MAX_COLUMNS {
+		columns[i].bounding_box = rl.BoundingBox {
+			min = rl.Vector3 {
+				columns[i].transform.translation.x - columns[i].transform.scale.x / 2,
+				columns[i].transform.translation.y - columns[i].transform.scale.y / 2,
+				columns[i].transform.translation.z - columns[i].transform.scale.z / 2,
+			},
+			max = rl.Vector3 {
+				columns[i].transform.translation.x + columns[i].transform.scale.x / 2,
+				columns[i].transform.translation.y + columns[i].transform.scale.y / 2,
+				columns[i].transform.translation.z + columns[i].transform.scale.z / 2,
+			},
+		}
+	}
+
+  player.update(&camera, &columns)
 }
 
 draw :: proc() {
@@ -53,32 +64,50 @@ draw :: proc() {
     rl.BeginMode3D(camera)
       draw_env(&columns)
 
-      rl.DrawText("Congrats! You created your first window!", 190, 200, 20, rl.LIGHTGRAY) 
+      player.draw(&camera)
     rl.EndMode3D()
+
+    rl.DrawFPS(10, 10)
   rl.EndDrawing()
 }
 
+// Functions
+@(private)
 init_camera :: proc() -> rl.Camera {
-	camera: rl.Camera
-
-	camera.position = rl.Vector3 {0, 2, 4}
-	camera.target = rl.Vector3 {0, 2, 0}
-	camera.up = rl.Vector3 {0, 1, 0}
-	camera.fovy = 60
-	camera.projection = rl.CameraProjection.PERSPECTIVE
-	
-	return camera
+  return rl.Camera {
+    position = rl.Vector3 { 0, 3, 4 },
+    target = player.transform.translation,
+    up = rl.Vector3 { 0, 1, 0 },
+    fovy = 60,
+    projection = rl.CameraProjection.PERSPECTIVE,
+  }
 }
 
-draw_env :: proc(columns: ^[MAX_COLUMNS] Column) {
+@(private)
+init_env :: proc() {
+  for i in 0 ..< MAX_COLUMNS {
+		columns[i].transform.scale = rl.Vector3 { 2, cast(f32) rl.GetRandomValue(1, 12), 2 }
+
+		columns[i].transform.translation = rl.Vector3 {
+			cast(f32) rl.GetRandomValue(-15, 15),
+			columns[i].transform.scale.y / 2.0,
+			cast(f32) rl.GetRandomValue(-15, 15)
+		}
+
+		columns[i].color = rl.Color { cast(u8) rl.GetRandomValue(20, 255), cast(u8) rl.GetRandomValue(10, 55), 30, 255 }
+	}
+}
+
+@(private)
+draw_env :: proc(columns: ^[MAX_COLUMNS] lib.Object) {
 	rl.DrawPlane(rl.Vector3{0, 0, 0}, rl.Vector2{32, 32}, rl.LIGHTGRAY) // Draw ground
 
-	rl.DrawCube(rl.Vector3{ -16, 2, 0 }, 1, 5, 32, rl.BLUE);     // Draw a blue wall
-	rl.DrawCube(rl.Vector3{ 16, 2, 0 }, 1, 5, 32, rl.LIME);      // Draw a green wall
-	rl.DrawCube(rl.Vector3{ 0, 2, 16 }, 32, 5, 1, rl.GOLD);      // Draw a yellow wall
+	rl.DrawCube(rl.Vector3 { -16, 2, 0 }, 1, 5, 32, rl.BLUE);     // Draw a blue wall
+	rl.DrawCube(rl.Vector3 { 16, 2, 0 }, 1, 5, 32, rl.LIME);      // Draw a green wall
+	rl.DrawCube(rl.Vector3 { 0, 2, 16 }, 32, 5, 1, rl.GOLD);      // Draw a yellow wall
 
-	for i in 0..<MAX_COLUMNS {
-		rl.DrawCube(columns[i].position, 2, columns[i].height, 2, columns[i].color)
-		rl.DrawCubeWires(columns[i].position, 2, columns[i].height, 2, rl.MAROON)
+	for i in 0 ..< MAX_COLUMNS {
+		rl.DrawCubeV(columns[i].transform.translation, columns[i].transform.scale, columns[i].color)
+		rl.DrawCubeV(columns[i].bounding_box.max - columns[i].bounding_box.min, columns[i].transform.scale, columns[i].color)
 	}
 }
