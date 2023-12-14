@@ -18,7 +18,7 @@ bounding_box: rl.BoundingBox
 
 can_move_x: bool = true
 
-init :: proc(box: ^[20]lib.Object) {
+init :: proc() {
 	transform = rl.Transform {
 		translation = rl.Vector3{0, 5, 0},
 		rotation = rl.Quaternion{},
@@ -26,12 +26,12 @@ init :: proc(box: ^[20]lib.Object) {
 	}
 }
 
-update :: proc(camera: ^rl.Camera, box: ^[20]lib.Object, deltaTime: f32) {
+update :: proc(camera: ^rl.Camera, boxes: ^[20]lib.Object, deltaTime: f32) {
 	handle_input(deltaTime)
 
-	for i in 0 ..< 20 {
-		if rl.CheckCollisionBoxes(bounding_box, box[i].bounding_box) {
-      adjustPlayerOnCollision(&bounding_box, &box[i].bounding_box)
+	for i in 0 ..< len(boxes) {
+		if rl.CheckCollisionBoxes(bounding_box, boxes[i].bounding_box) {
+      adjustPlayerOnCollision(&bounding_box, &boxes[i].bounding_box)
 		}
 	}
 
@@ -79,6 +79,7 @@ calculate_bounding_box :: proc() {
 	}
 }
 
+// TODO - better collision
 @(private)
 adjustPlayerOnCollision :: proc(box1, box2: ^rl.BoundingBox) {
   if box1.max.x > box2.max.x do velocity.x = clamp(velocity.x, 0, SPEED)

@@ -54,12 +54,10 @@ init :: proc() {
 	}
 
 	// Entities
-	player.init(&columns)
+	player.init()
 } 
 
 update :: proc() {
-  // rl.UpdateCamera(&camera, camera_mode)
-
   player.update(&camera, &columns, rl.GetFrameTime())
 }
 
