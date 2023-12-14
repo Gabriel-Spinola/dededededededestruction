@@ -11,22 +11,22 @@ import "player"
 
 // https://gist.github.com/jakubtomsu/9cae5298f86d2b9d2aed48641a1a3dbd
 
-// Constants
+// ANCHOR - Constants
 WINDOW_TITLE :: "FPS"
-FRAME_RATE :: 60
+FRAME_RATE :: 120
 
 SCREEN_WIDTH :: 800
 SCREEN_HEIGHT :: 450
 
 MAX_COLUMNS :: 20
 
-// Variable Definitions
+// ANCHOR - Variable Definitions
 @(private) camera: rl.Camera
 @(private) camera_mode: rl.CameraMode
 
 @(private) columns: [MAX_COLUMNS] lib.Object
 
-// Default Functions
+// ANCHOR - Default Functions
 init :: proc() {
   rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE)
 
@@ -58,9 +58,9 @@ init :: proc() {
 } 
 
 update :: proc() {
-  rl.UpdateCamera(&camera, camera_mode)
+  // rl.UpdateCamera(&camera, camera_mode)
 
-  player.update(&camera, &columns)
+  player.update(&camera, &columns, rl.GetFrameTime())
 }
 
 draw :: proc() {
@@ -77,7 +77,7 @@ draw :: proc() {
   rl.EndDrawing()
 }
 
-// Functions
+// ANCHOR - Functions
 @(private)
 init_camera :: proc() -> rl.Camera {
   return rl.Camera {
@@ -85,7 +85,7 @@ init_camera :: proc() -> rl.Camera {
     target = player.transform.translation,
     up = rl.Vector3 { 0, 1, 0 },
     fovy = 60,
-    projection = rl.CameraProjection.PERSPECTIVE,
+    projection = .PERSPECTIVE,
   }
 }
 
@@ -108,14 +108,11 @@ init_env :: proc() {
 draw_env :: proc(columns: ^[MAX_COLUMNS] lib.Object) {
 	rl.DrawPlane(rl.Vector3{0, 0, 0}, rl.Vector2{32, 32}, rl.LIGHTGRAY) // Draw ground
 
-
-
 	rl.DrawCube(rl.Vector3 { -16, 2, 0 }, 1, 5, 32, rl.BLUE);     // Draw a blue wall
 	rl.DrawCube(rl.Vector3 { 16, 2, 0 }, 1, 5, 32, rl.LIME);      // Draw a green wall
 	rl.DrawCube(rl.Vector3 { 0, 2, 16 }, 32, 5, 1, rl.GOLD);      // Draw a yellow wall
 
 	for i in 0 ..< MAX_COLUMNS {
 		rl.DrawCubeV(columns[i].transform.translation, columns[i].transform.scale, columns[i].color)
-		rl.DrawCubeV(columns[i].bounding_box.max - columns[i].bounding_box.min, columns[i].transform.scale, columns[i].color)
 	}
 }
