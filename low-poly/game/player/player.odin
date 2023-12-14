@@ -10,7 +10,7 @@ transform: rl.Transform
 
 bounding_box: rl.BoundingBox
 
-init :: proc() {
+init :: proc(box: ^[20] lib.Object) {
   transform = rl.Transform {
     translation = rl.Vector3 { 0, 5, 0 },
     rotation = rl.Quaternion {},
@@ -19,20 +19,40 @@ init :: proc() {
 
   bounding_box = rl.BoundingBox { 
     min = rl.Vector3 {
-      transform.translation.x - 1 / 2,
-      transform.translation.y - 3 / 2,
-      transform.translation.z - 1 / 2,
+      transform.translation.x - transform.scale.x / 2,
+      transform.translation.y - transform.scale.y / 2,
+      transform.translation.z - transform.scale.z / 2,
     },
     max = rl.Vector3 {
-      transform.translation.x + 1 / 2,
-      transform.translation.y + 3 / 2,
-      transform.translation.z + 1 / 2,
+      transform.translation.x + transform.scale.x / 2,
+      transform.translation.y + transform.scale.y / 2,
+      transform.translation.z + transform.scale.z / 2,
     },
   }
+
+  for i in 0 ..< len(box) {
+    fmt.println(box[i].bounding_box)
+    fmt.println('\n')
+  }
+
+  fmt.println(bounding_box)
 }
 
 update :: proc(camera: ^rl.Camera, box: ^[20] lib.Object) {
   transform.translation = camera.target
+
+  bounding_box = rl.BoundingBox { 
+    min = rl.Vector3 {
+      transform.translation.x - transform.scale.x / 2,
+      transform.translation.y - transform.scale.y / 2,
+      transform.translation.z - transform.scale.z / 2,
+    },
+    max = rl.Vector3 {
+      transform.translation.x + transform.scale.x / 2,
+      transform.translation.y + transform.scale.y / 2,
+      transform.translation.z + transform.scale.z / 2,
+    },
+  }
 
   for i in 0 ..< 20 {
     if rl.CheckCollisionBoxes(bounding_box, box[i].bounding_box) {
@@ -42,6 +62,5 @@ update :: proc(camera: ^rl.Camera, box: ^[20] lib.Object) {
 }
 
 draw :: proc(camera: ^rl.Camera) {
-  // fmt.println(transform)
-  rl.DrawCubeV(transform.translation, {1, 3, 1}, rl.PURPLE)
+  rl.DrawCubeV(transform.translation, transform.scale, rl.PURPLE)
 }

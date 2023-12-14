@@ -2,9 +2,12 @@ package game
 
 import rl "vendor:raylib"
 import "core:fmt"
-import "lib"
+import "core:math"
+import "core:math/linalg"
 
+import "lib"
 import "player"
+
 
 // https://gist.github.com/jakubtomsu/9cae5298f86d2b9d2aed48641a1a3dbd
 
@@ -34,10 +37,6 @@ init :: proc() {
 	camera_mode = rl.CameraMode.THIRD_PERSON
 
 	init_env()
-} 
-
-update :: proc() {
-  rl.UpdateCamera(&camera, camera_mode)
 
 	for i in 0 ..< MAX_COLUMNS {
 		columns[i].bounding_box = rl.BoundingBox {
@@ -53,6 +52,13 @@ update :: proc() {
 			},
 		}
 	}
+
+	// Entities
+	player.init(&columns)
+} 
+
+update :: proc() {
+  rl.UpdateCamera(&camera, camera_mode)
 
   player.update(&camera, &columns)
 }
@@ -101,6 +107,8 @@ init_env :: proc() {
 @(private)
 draw_env :: proc(columns: ^[MAX_COLUMNS] lib.Object) {
 	rl.DrawPlane(rl.Vector3{0, 0, 0}, rl.Vector2{32, 32}, rl.LIGHTGRAY) // Draw ground
+
+
 
 	rl.DrawCube(rl.Vector3 { -16, 2, 0 }, 1, 5, 32, rl.BLUE);     // Draw a blue wall
 	rl.DrawCube(rl.Vector3 { 16, 2, 0 }, 1, 5, 32, rl.LIME);      // Draw a green wall
