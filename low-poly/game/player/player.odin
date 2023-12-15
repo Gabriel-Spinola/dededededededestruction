@@ -6,17 +6,17 @@ import rl "vendor:raylib"
 
 import "../lib"
 
-SPEED :: 20
+MAX_SPEED :: 20
 
 velocity: rl.Vector3
 transform: rl.Transform
+bounding_box: rl.BoundingBox
 
 @(private)
 PLAYER_COLOR :: rl.PURPLE
 
-bounding_box: rl.BoundingBox
-
-can_move_x: bool = true
+@(private) can_move_x: bool = true
+@(private) collision_offset: f32 = .1
 
 init :: proc() {
 	transform = rl.Transform {
@@ -26,7 +26,7 @@ init :: proc() {
 	}
 }
 
-update :: proc(camera: ^rl.Camera, boxes: ^[20]lib.Object, deltaTime: f32) {
+update :: proc(camera: ^rl.Camera, boxes: ^[20] lib.Object, deltaTime: f32) {
 	handle_input(deltaTime)
 
 	for i in 0 ..< len(boxes) {
@@ -56,11 +56,11 @@ draw :: proc(camera: ^rl.Camera) {
 
 @(private)
 handle_input :: proc(deltaTime: f32) {
-	if rl.IsKeyDown(.W) do velocity += lib.VEC3_FORWARD * deltaTime * SPEED
-	if rl.IsKeyDown(.S) do velocity -= lib.VEC3_FORWARD * deltaTime * SPEED
+	if rl.IsKeyDown(.W) do velocity += lib.VEC3_FORWARD * deltaTime * MAX_SPEED
+	if rl.IsKeyDown(.S) do velocity -= lib.VEC3_FORWARD * deltaTime * MAX_SPEED
 
-	if rl.IsKeyDown(.D) do velocity -= lib.VEC3_RIGHT * deltaTime * SPEED
-	if rl.IsKeyDown(.A) do velocity += lib.VEC3_RIGHT * deltaTime * SPEED
+	if rl.IsKeyDown(.D) do velocity -= lib.VEC3_RIGHT * deltaTime * MAX_SPEED
+	if rl.IsKeyDown(.A) do velocity += lib.VEC3_RIGHT * deltaTime * MAX_SPEED
 }
 
 @(private)
@@ -82,9 +82,9 @@ calculate_bounding_box :: proc() {
 // TODO - better collision
 @(private)
 adjustPlayerOnCollision :: proc(box1, box2: ^rl.BoundingBox) {
-  if box1.max.x > box2.max.x do velocity.x = clamp(velocity.x, 0, SPEED)
-  if box1.max.x < box2.max.x do velocity.x = clamp(velocity.x, -SPEED, 0)
+  if box1.max.x > box2.max.x do velocity.x = clamp(velocity.x, collision_offset, MAX_SPEED)
+  if box1.max.x < box2.max.x do velocity.x = clamp(velocity.x, -MAX_SPEED, -collision_offset)
 
-	if box1.max.z > box2.max.z do velocity.z = clamp(velocity.z, 0, SPEED)
-  if box1.max.z < box2.max.z do velocity.z = clamp(velocity.z, -SPEED, 0)
+	if box1.max.z > box2.max.z do velocity.z = clamp(velocity.z, collision_offset, MAX_SPEED)
+  if box1.max.z < box2.max.z do velocity.z = clamp(velocity.z, -MAX_SPEED, -collision_offset)
 }
