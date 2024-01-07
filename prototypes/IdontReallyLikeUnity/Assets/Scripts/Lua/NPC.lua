@@ -1,1 +1,1 @@
-Debug("Hello, Lua!")
+Debug "Hello, Lua!"
