@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using MoonSharp.Interpreter;
-using UnityEngine;
 
 // TODO: Adding multi threading capabilities
 public class NPCLuaModule : ILuaModule {

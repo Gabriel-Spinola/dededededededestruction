@@ -15,8 +15,8 @@ public class LuaScriptRunner {
   private Thread _runThread;
 
   public LuaScriptRunner(string scriptPath) {
-    _script = new();
-    _luaModules = new();
+    _script = new Script();
+    _luaModules = new List<ILuaModule>();
 
     _scriptPath = scriptPath;
     if (!File.Exists(_scriptPath)) {
@@ -33,7 +33,7 @@ public class LuaScriptRunner {
       string code = File.ReadAllText(_scriptPath);
 
       try {
-        var dynCode = _script.DoString(code);
+        DynValue dynCode = _script.DoString(code);
 
         // TODO - Better Handling
         Start = () => dynCode.Table.Get("start").Function?.Call();
