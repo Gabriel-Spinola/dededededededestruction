@@ -563,7 +563,7 @@ MonoBehaviour:
     m_DecelTime: 0.1
     m_InputAxisName: Mouse Y
     m_InputAxisValue: 0
-    m_InvertInput: 0
+    m_InvertInput: 1
     m_MinValue: 0
     m_MaxValue: 1
     m_Wrap: 0
@@ -1328,7 +1328,7 @@ GameObject:
   - component: {fileID: 1396744057}
   - component: {fileID: 1396744056}
   m_Layer: 0
-  m_Name: w
+  m_Name: Cool Glasses
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
