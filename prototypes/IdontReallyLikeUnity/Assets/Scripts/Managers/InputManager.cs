@@ -3,38 +3,45 @@ using UnityEngine.SceneManagement;
 
 public class InputManager : MonoBehaviour
 {
-    public MainInputs InputActions { get; private set; }
+  public MainInputs InputActions { get; private set; }
 
-    [SerializeField] private Vector2 _movementVec;
+  [SerializeField] private Vector2 _movementVec;
 
-    [SerializeField] private bool _keyJump;
-    [SerializeField] private bool _keyJumpHold;
-    [SerializeField] private bool _keyShoot;
+  [SerializeField] private bool _keyJump;
+  [SerializeField] private bool _keyJumpHold;
+  [SerializeField] private bool _keyShoot;
 
-    public Vector2 MovementVec => _movementVec;
+  public Vector2 MovementVec => _movementVec;
 
-    public bool KeyJump => _keyJump;
-    public bool KeyJumpHold => _keyJumpHold;
-    public bool KeyShoot => _keyShoot;
+  public bool KeyJump => _keyJump;
+  public bool KeyJumpHold => _keyJumpHold;
+  public bool KeyShoot => _keyShoot;
 
-    private void Awake()
-    {
-        InputActions = new MainInputs();
+  private void Awake()
+  {
+    InputActions = new MainInputs();
+    InputActions.Player.Enable();
 
-        InputActions.Player.Enable();
+    Cursor.visible = false;
+    Cursor.lockState = CursorLockMode.Locked;
+  }
+
+  private void Update()
+  {
+#if UNITY_EDITOR
+    if (Input.GetKeyDown(KeyCode.RightAlt)) {
+      SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    private void Update()
-    {
-#if UNITY_EDITOR
-        if (Input.GetKeyDown(KeyCode.RightAlt)) {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        }
+    if (Input.GetKeyDown(KeyCode.LeftAlt)) {
+      Cursor.visible = true;
+      Cursor.lockState = CursorLockMode.None;
+    }
 #endif
 
-        _movementVec = InputActions.Player.Movement.ReadValue<Vector2>();
-        _keyJumpHold = InputActions.Player.JumpHold.ReadValue<float>() > 0f;
+    _movementVec = InputActions.Player.Movement.ReadValue<Vector2>();
+    _keyJumpHold = InputActions.Player.JumpHold.ReadValue<float>() > 0f;
 
-        _keyJump = InputActions.Player.Jump.triggered;
-    }
+    _keyJump = InputActions.Player.Jump.triggered;
+  }
 }
