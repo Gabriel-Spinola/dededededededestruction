@@ -5,7 +5,10 @@ using System.Threading;
 using MoonSharp.Interpreter;
 
 public class LuaScriptRunner {
-  private readonly List<LuaModule> _luaModules;
+  public Action Start { get; private set; }
+  public Action Update { get; private set; }
+
+  private readonly List<ILuaModule> _luaModules;
   private readonly Script _script;
   private readonly string _scriptPath;
 
@@ -16,12 +19,11 @@ public class LuaScriptRunner {
     _luaModules = new();
 
     _scriptPath = scriptPath;
-
     if (!File.Exists(_scriptPath)) {
       throw new ArgumentException($"{_scriptPath} not found");
     }
 
-    SetupGlobalModules();
+    AddModule(new GlobalModule());
   }
 
   public void Run() {
@@ -31,7 +33,11 @@ public class LuaScriptRunner {
       string code = File.ReadAllText(_scriptPath);
 
       try {
-        _script.DoString(code);
+        var dynCode = _script.DoString(code);
+
+        // TODO - Better Handling
+        Start = () => dynCode.Table.Get("start").Function?.Call();
+        Update = () => dynCode.Table.Get("update").Function?.Call();
       }
       catch (ScriptRuntimeException error) {
         UnityEngine.Debug.LogError(error.DecoratedMessage);
@@ -41,21 +47,17 @@ public class LuaScriptRunner {
     _runThread.Start();
   }
 
-  public void AddModule(LuaModule module) {
+  public void AddModule(ILuaModule module) {
     _luaModules.Add(module);
 
     module.InstallBindings(_script);
   }
 
-  public void RemoveModule(LuaModule module) {
+  public void RemoveModule(ILuaModule module) {
     if (!_luaModules.Contains(module)) {
       throw new ArgumentException("Lua module not currently installed");
     }
 
     _luaModules.Remove(module);
-  }
-
-  public void SetupGlobalModules() {
-    _script.Globals["Debug"] = (Action<string>) UnityEngine.Debug.Log;
   }
 }

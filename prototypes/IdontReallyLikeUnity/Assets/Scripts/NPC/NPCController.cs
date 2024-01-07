@@ -5,14 +5,16 @@ using UnityEngine;
 public class NPCController : MonoBehaviour {
     private LuaScriptRunner _luaScriptRunner;
 
-    // Start is called before the first frame update
-    void Start() {
+    private void Awake() {
         _luaScriptRunner = new LuaScriptRunner("Assets/Scripts/Lua/NPC.lua");
         _luaScriptRunner.Run();
-        //_luaScriptRunner.AddModule(new NPCLuaModule());
+    }
+
+    void Start() {
+        _luaScriptRunner.Start();
     }
 
     void Update() {
-        
+        _luaScriptRunner.Update();
     }
 }

@@ -4,14 +4,14 @@ using MoonSharp.Interpreter;
 using UnityEngine;
 
 // TODO: Adding multi threading capabilities
-public class NPCLuaModule : LuaModule {
+public class NPCLuaModule : ILuaModule {
     private NPCController _bindingObject;
 
-    public override void InstallBindings(Script script) {
+    public void InstallBindings(Script script) {
         throw new System.NotImplementedException();
     }
 
-    public override void UninstallBindings(Script script) {
+    public void UninstallBindings(Script script) {
         throw new System.NotImplementedException();
     }
 }
